@@ -1,17 +1,20 @@
-# stillhere
+### 🔧 Configuration
+- **Flutter:** Build using `flutter build web --release`.
+- **Backend:** Firebase Cloud Functions (v2) with scheduled triggers.
+- **Security:** Sensitive credentials managed via `.env` and excluded from version control.
+- Focus: Functionality, Tech Stack, and Reliability.
 
-A new Flutter project.
+StillHere: Automated Digital Legacy & Instruction System
+StillHere is a Flutter-based web application integrated with Firebase, designed to ensure your critical instructions and digital legacy are delivered even if you are unable to do so manually.
 
-## Getting Started
+The Concept: The user maintains a "Heartbeat" by interacting with the app. If the heartbeat stops for a predefined period (72 hours), the system automatically triggers.
 
-This project is a starting point for a Flutter application.
+Core Features:
 
-A few resources to get you started if this is your first Flutter project:
+Dead Man's Switch: Secure "Heartbeat" monitoring via Firebase Cloud Functions.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+Automated Dispatch: Preset instructions (records) are sent to designated heirs via encrypted email upon signal loss.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Minimalist Dashboard: A high-contrast, biometric-themed UI for status monitoring.
+
+Tech Stack: Flutter (Web), Firebase Firestore, Cloud Functions (Node.js), and Nodemailer.
