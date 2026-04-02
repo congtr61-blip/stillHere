@@ -27,30 +27,23 @@ class StillHereApp extends StatelessWidget {
         primarySwatch: Colors.cyan,
       ),
       // 使用 StreamBuilder 监听登录状态
-       home: const DashboardScreen(),
-       //StreamBuilder<User?>(
-      //   stream: FirebaseAuth.instance.authStateChanges(),
-      //   builder: (context, snapshot) {
-      //     // 如果正在连接，显示加载圈
-      //     if (snapshot.connectionState == ConnectionState.waiting) {
-      //       return const Scaffold(
-      //         body: Center(child: CircularProgressIndicator(color: Colors.cyanAccent)),
-      //       );
-      //     }
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          // 如果正在连接，显示加载圈
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator(color: Colors.cyanAccent)),
+            );
+          }
           
-      //     // 如果有用户数据，进主面板，否则进登录页
-      //     // 注意：这里去掉了 const，防止因为类中含有非 const 成员导致的报错
-      //     if (snapshot.hasData) {
-      //       return DashboardScreen(); 
-      //     }
-      //     return LoginPage();
-      //   },
-      // ),
-      // 路由表
-      routes: {
-        '/login': (context) => LoginPage(),
-        '/dashboard': (context) => DashboardScreen(),
-      },
+          // 如果有用户数据，进主面板，否则进登录页
+          if (snapshot.hasData && snapshot.data != null) {
+            return DashboardScreen(uid: snapshot.data!.uid);
+          }
+          return const LoginPage();
+        },
+      ),
     );
   }
 }

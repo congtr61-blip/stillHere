@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 import 'detail_screen.dart';
+import '../widgets/archive_card.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  final String uid;
+  
+  const DashboardScreen({super.key, required this.uid});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -12,10 +16,10 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> with TickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   
-  // 调试配置
-  final String _debugUid = "0k99IZlCNVMM4bttirYKedEHAln1";
-  final String _debugEmail = "congtr61@gmail.com";
+  late String _uid;
+  String? _userEmail;
 
   Timer? _timer;
   DateTime? _lastHeartbeat;
@@ -30,6 +34,9 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
   @override
   void initState() {
     super.initState();
+    _uid = widget.uid;
+    _userEmail = _auth.currentUser?.email ?? "User";
+    
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -46,7 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
   }
 
   Future<void> _loadUserStatus() async {
-    final doc = await _firestore.collection('users').doc(_debugUid).get();
+    final doc = await _firestore.collection('users').doc(_uid).get();
     if (doc.exists && doc.data()?['lastHeartbeat'] != null) {
       if (mounted) {
         setState(() {
@@ -80,10 +87,10 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
 
     try {
       final now = DateTime.now();
-      await _firestore.collection('users').doc(_debugUid).set({
+      await _firestore.collection('users').doc(_uid).set({
         'lastHeartbeat': now,
         'status': 'active',
-        'email': _debugEmail,
+        'email': _userEmail,
       }, SetOptions(merge: true));
       
       // 增加仪式感延迟
@@ -109,7 +116,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
 
   Future<void> _deleteRecord(String docId) async {
     try {
-      await _firestore.collection('users').doc(_debugUid).collection('records').doc(docId).delete();
+      await _firestore.collection('users').doc(_uid).collection('records').doc(docId).delete();
       _showSnackBar("DELETED FROM CLOUD");
     } catch (e) {
       _showSnackBar("DELETE FAILED: $e");
@@ -163,7 +170,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
             style: ElevatedButton.styleFrom(backgroundColor: Colors.cyanAccent, foregroundColor: Colors.black),
             onPressed: () async {
               if (titleController.text.isNotEmpty) {
-                await _firestore.collection('users').doc(_debugUid).collection('records').add({
+                await _firestore.collection('users').doc(_uid).collection('records').add({
                   'title': titleController.text,
                   'heirEmail': heirEmailController.text,
                   'content': contentController.text,
@@ -314,7 +321,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
           // --- 列表区域 ---
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: _firestore.collection('users').doc(_debugUid).collection('records').orderBy('createdAt', descending: true).snapshots(),
+              stream: _firestore.collection('users').doc(_uid).collection('records').orderBy('createdAt', descending: true).snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) return const SizedBox();
                 final docs = snapshot.data!.docs;
@@ -322,35 +329,24 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
-                    var data = docs[index].data() as Map<String, dynamic>;
-                    String docId = docs[index].id;
-                    String title = data['title'] ?? 'UNKNOWN';
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 15),
-                      padding: const EdgeInsets.symmetric(vertical: 5),
-                      decoration: BoxDecoration(border: Border(left: BorderSide(color: Colors.cyanAccent.withOpacity(0.3), width: 2))),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.only(left: 20, right: 10, top: 5, bottom: 5),
-                        title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, letterSpacing: 1)),
-                        subtitle: Text("HEIR: ${data['heirEmail']}", style: const TextStyle(color: Colors.white24, fontSize: 10)),
-                        trailing: SizedBox(
-                          width: 80,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                                onPressed: () => _showDeleteConfirm(docId, title),
-                              ),
-                              const SizedBox(width: 5),
-                              const Icon(Icons.keyboard_arrow_right, color: Colors.white10, size: 18),
-                            ],
+                    var doc = docs[index];
+                    
+                    return ArchiveCard(
+                      doc: doc,
+                      uid: _uid,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailScreen(
+                            docId: doc.id,
+                            uid: _uid,
+                            initialData: doc.data() as Map<String, dynamic>,
                           ),
                         ),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => DetailScreen(docId: docId, initialData: data))),
+                      ),
+                      onDelete: () => _showDeleteConfirm(
+                        doc.id,
+                        (doc.data() as Map<String, dynamic>)['title'] ?? 'UNKNOWN',
                       ),
                     );
                   },

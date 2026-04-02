@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 用户数据权限：只允许认证用户访问自己的数据
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+      
+      // 遗产指令子集合权限
+      match /records/{recordId} {
+        allow read, write: if request.auth.uid == userId;
+      }
+    }
+    
+    // 默认拒绝所有其他访问
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

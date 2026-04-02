@@ -15,15 +15,15 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _handleGoogleSignIn() async {
     setState(() => _isLoggingIn = true);
     try {
-      final user = await _authService.signInWithGoogle();
-      if (user != null && mounted) {
-        Navigator.pushReplacementNamed(context, '/dashboard');
+      final userCredential = await _authService.signInWithGoogle();
+      if (userCredential != null && mounted) {
+        // StreamBuilder 在 main.dart 中会自动监听到登录状态的改变
+        // 并自动切换到 DashboardScreen，无需手动导航
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("登录失败: $e")),
       );
-    } finally {
       if (mounted) setState(() => _isLoggingIn = false);
     }
   }

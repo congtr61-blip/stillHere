@@ -3,17 +3,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DetailScreen extends StatefulWidget {
   final String docId;
+  final String uid;
   final Map<String, dynamic> initialData;
 
-  const DetailScreen({super.key, required this.docId, required this.initialData});
+  const DetailScreen({super.key, required this.docId, required this.uid, required this.initialData});
 
   @override
   State<DetailScreen> createState() => _DetailScreenState();
 }
 
 class _DetailScreenState extends State<DetailScreen> {
-  // 必须与 DashboardScreen 中的 UID 保持一致
-  final String _debugUid = "0k99IZlCNVMM4bttirYKedEHAln1";
+  late String _uid;
 
   late TextEditingController _titleController;
   late TextEditingController _emailController;
@@ -24,6 +24,7 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
+    _uid = widget.uid;
     _titleController = TextEditingController(text: widget.initialData['title']);
     _emailController = TextEditingController(text: widget.initialData['heirEmail']);
     _contentController = TextEditingController(text: widget.initialData['content']);
@@ -42,7 +43,7 @@ class _DetailScreenState extends State<DetailScreen> {
     try {
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(_debugUid)
+          .doc(_uid)
           .collection('records')
           .doc(widget.docId)
           .update({
@@ -113,6 +114,10 @@ class _DetailScreenState extends State<DetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 显示发送状态信息
+              _buildStatusBanner(),
+              const SizedBox(height: 25),
+              
               _buildTechField("IDENTIFIER / 标题", _titleController, _isEditing),
               const SizedBox(height: 30),
               _buildTechField("RECIPIENT / 继承人邮箱", _emailController, _isEditing),
@@ -135,6 +140,111 @@ class _DetailScreenState extends State<DetailScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildStatusBanner() {
+    final status = widget.initialData['status'] ?? 'draft';
+    final isDelivered = status == 'delivered';
+    final isFailed = status == 'failed';
+    final sentAt = widget.initialData['sentAt'] as Timestamp?;
+    final failureReason = widget.initialData['failureReason'] as String?;
+    
+    if (status == 'draft' || !widget.initialData.containsKey('status')) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.blue.withOpacity(0.1),
+          border: Border.all(color: Colors.blue.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.info_outline, color: Colors.blue, size: 16),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                '草稿状态 - 该指令将在触发时自动分发给继承人',
+                style: TextStyle(color: Colors.blue, fontSize: 11),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    if (isDelivered) {
+      final dateStr = sentAt != null 
+        ? sentAt.toDate().toString().substring(0, 19)
+        : '未知';
+      
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.greenAccent.withOpacity(0.1),
+          border: Border.all(color: Colors.greenAccent.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.greenAccent, size: 16),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '✓ 已分发给继承人',
+                    style: const TextStyle(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '分发时间: $dateStr',
+              style: TextStyle(color: Colors.greenAccent.withOpacity(0.7), fontSize: 10),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    if (isFailed) {
+      return Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.redAccent.withOpacity(0.1),
+          border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.redAccent, size: 16),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '✗ 分发失败',
+                    style: const TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            if (failureReason != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                '原因: $failureReason',
+                style: TextStyle(color: Colors.redAccent.withOpacity(0.7), fontSize: 10),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+    
+    return const SizedBox.shrink();
   }
 
   Widget _buildTechField(String label, TextEditingController controller, bool enabled, {int maxLines = 1}) {
