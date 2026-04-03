@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 用户媒体文件上传规则
+    // 允许认证用户上传和访问自己的媒体文件
+    match /users/{userId}/records/{recordId}/media/{allPaths=**} {
+      // 认证用户可以读写自己的文件
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // 默认拒绝其他访问
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -13,6 +13,12 @@
       }
     }
   },
+  "storage": [
+    {
+      "bucket": "stillhere-ad395.appspot.com",
+      "rules": "storage.rules"
+    }
+  ],
   "functions": [
     {
       "source": "functions",
@@ -36,6 +42,10 @@
     ],
     "rewrites": [
       {
+        "source": "/api/proxy-image",
+        "function": "proxyImage"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
@@ -47,6 +57,14 @@
           {
             "key": "Cross-Origin-Opener-Policy",
             "value": "same-origin-allow-popups"
+          },
+          {
+            "key": "Cross-Origin-Embedder-Policy",
+            "value": "credentialless"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
           }
         ]
       }

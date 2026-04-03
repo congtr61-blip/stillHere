@@ -1,9 +1,11 @@
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { onRequest } = require("firebase-functions/v2/https");
 const { logger } = require("firebase-functions");
 const admin = require("firebase-admin");
 const { Timestamp } = require("firebase-admin/firestore");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const cors = require("cors");
 
 admin.initializeApp();
 
@@ -15,6 +17,14 @@ const transporter = nodemailer.createTransport({
         pass: process.env.GMAIL_PASS 
     }
 });
+
+// 工具函数：格式化文件大小
+const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+};
 
 // 每天凌晨 00:00 准时扫描 (你可以根据需要修改 cron 表达式)
 exports.dailySecurityCheck = onSchedule("0 0 * * *", async (event) => {
@@ -96,6 +106,12 @@ exports.dailySecurityCheck = onSchedule("0 0 * * *", async (event) => {
         .instruction-box { background: #1e1e1e; border: 1px solid #0097a7; padding: 20px; margin: 20px 0; border-radius: 4px; }
         .instruction-title { color: #00bcd4; font-size: 14px; font-weight: bold; margin-bottom: 12px; }
         .instruction-content { color: #b0bec5; line-height: 1.8; font-size: 13px; white-space: pre-wrap; word-wrap: break-word; }
+        .media-section { background: #1e1e1e; border: 1px solid #00bcd4; padding: 20px; margin: 20px 0; border-radius: 4px; }
+        .media-title { color: #00bcd4; font-size: 14px; font-weight: bold; margin-bottom: 15px; }
+        .media-item { background: #263238; padding: 12px; margin-bottom: 10px; border-radius: 4px; border-left: 3px solid #00bcd4; }
+        .media-item-type { color: #80deea; font-size: 11px; font-weight: bold; letter-spacing: 1px; }
+        .media-item-name { color: #e0e0e0; font-size: 13px; margin: 5px 0; word-break: break-all; }
+        .media-item-link { display: inline-block; margin-top: 8px; padding: 8px 12px; background: #00bcd4; color: #000; text-decoration: none; border-radius: 3px; font-size: 11px; font-weight: bold; }
         .verification { background: #1e1e1e; padding: 15px; border-radius: 4px; margin: 20px 0; border: 1px dashed #0097a7; text-align: center; }
         .verification-code { font-size: 24px; font-weight: bold; color: #00bcd4; font-family: 'Courier New', monospace; letter-spacing: 2px; margin: 10px 0; }
         .footer { background: #0f0f0f; padding: 20px; text-align: center; border-top: 1px solid #333; font-size: 11px; color: #666; }
@@ -127,6 +143,33 @@ exports.dailySecurityCheck = onSchedule("0 0 * * *", async (event) => {
                 <div class="instruction-title">【${record.title}】</div>
                 <div class="instruction-content">${(record.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
             </div>
+
+            ${
+              record.media && record.media.length > 0
+                ? `
+            <div class="media-section">
+                <div class="media-title">📎 附件媒体文件</div>
+                ${record.media
+                  .map((media) => {
+                    const mediaType =
+                      media.type === "image"
+                        ? "📷 图片"
+                        : media.type === "video"
+                          ? "🎥 视频"
+                          : "🎵 音频";
+                    return `
+                <div class="media-item">
+                    <div class="media-item-type">${mediaType} • ${media.name}</div>
+                    <div class="media-item-name">大小: ${formatFileSize(media.size)}</div>
+                    <a href="${media.url}" class="media-item-link">查看文件</a>
+                </div>
+                `;
+                  })
+                  .join("")}
+            </div>
+                `
+                : ""
+            }
 
             <div class="verification">
                 <div style="color: #b0bec5; font-size: 12px; margin-bottom: 8px;">安全验证码</div>
@@ -215,4 +258,88 @@ exports.dailySecurityCheck = onSchedule("0 0 * * *", async (event) => {
     } catch (error) {
         logger.error("!!! 严重错误:", error.stack);
     }
+});
+
+// HTTP 函数：代理 Firebase Storage 请求以解决 CORS 问题
+// 配置 CORS
+const corsHandler = cors({ origin: true });
+
+exports.proxyImage = onRequest((req, res) => {
+    corsHandler(req, res, async () => {
+        try {
+            if (req.method === 'OPTIONS') {
+                res.status(200).send('');
+                return;
+            }
+            
+            if (req.method !== 'GET') {
+                res.status(405).send('Method not allowed');
+                return;
+            }
+            
+            const { url } = req.query;
+            
+            if (!url) {
+                res.status(400).json({ error: 'Missing url parameter' });
+                return;
+            }
+            
+            // 解码 URL
+            let imageUrl;
+            try {
+                imageUrl = decodeURIComponent(url);
+            } catch (e) {
+                res.status(400).json({ error: 'Invalid URL encoding' });
+                return;
+            }
+            
+            // 验证 URL 来自 Firebase Storage
+            if (!imageUrl.includes('firebasestorage.googleapis.com')) {
+                res.status(403).json({ error: 'Invalid URL - must be from Firebase Storage' });
+                return;
+            }
+            
+            logger.info('Proxy requesting image from:', imageUrl.substring(0, 80) + '...');
+            
+            // 获取图片
+            const response = await fetch(imageUrl, {
+                timeout: 30000,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (compatible; StillHereApp/1.0)'
+                }
+            });
+            
+            if (!response.ok) {
+                logger.error('Failed to fetch image:', response.status, response.statusText);
+                res.status(response.status).json({ 
+                    error: `Failed to fetch image: ${response.statusText}` 
+                });
+                return;
+            }
+            
+            // 获取内容类型
+            const contentType = response.headers.get('content-type') || 'image/jpeg';
+            
+            // 获取图像数据
+            const buffer = await response.arrayBuffer();
+            
+            // 设置响应头
+            res.set('Content-Type', contentType);
+            res.set('Content-Length', buffer.byteLength.toString());
+            res.set('Cache-Control', 'public, max-age=3600');
+            res.set('X-Content-Type-Options', 'nosniff');
+            
+            // 发送二进制数据
+            res.status(200).send(Buffer.from(buffer));
+            
+            logger.info('Image proxied successfully from:', imageUrl.substring(0, 80) + '...');
+            
+        } catch (error) {
+            logger.error('Proxy error:', error.message, error.stack);
+            res.status(500).json({ 
+                error: 'Internal server error',
+                message: error.message 
+            });
+        }
+    });
 });

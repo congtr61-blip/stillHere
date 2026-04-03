@@ -4,6 +4,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 import 'detail_screen.dart';
 import '../widgets/archive_card.dart';
+import '../widgets/media_upload_overlay.dart';
+import '../widgets/daily_verification_dialog.dart';
+import '../services/media_service.dart';
+import '../services/record_verification_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   final String uid;
@@ -17,6 +21,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> with TickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final RecordVerificationService _verificationService = RecordVerificationService();
   
   late String _uid;
   String? _userEmail;
@@ -43,6 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
     );
     _startHeartbeatMonitor();
     _loadUserStatus();
+    _performDailyVerification();
   }
 
   @override
@@ -70,6 +76,41 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
         setState(() => _updateCountdown());
       }
     });
+  }
+
+  Future<void> _performDailyVerification() async {
+    try {
+      // 检查是否已经校验过今天
+      final hasCheckedToday = await _verificationService.hasCheckedToday(_uid);
+      
+      if (hasCheckedToday) {
+        return; // 已校验过，不需要再次显示
+      }
+
+      // 执行校验
+      final verificationResult = await _verificationService.dailyRecordsCheck(_uid);
+
+      if (mounted) {
+        // 标记已完成校验
+        await _verificationService.markVerificationComplete(_uid);
+
+        if (verificationResult['needsVerification'] == true ||
+            verificationResult['hasPendingRecords'] == true) {
+          // 显示校验对话框
+          showDialog(
+            context: context,
+            barrierDismissible: true,
+            builder: (dialogContext) => DailyVerificationDialog(
+              verificationResult: verificationResult,
+              onDismiss: () {},
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // 忽略错误，不影响正常使用
+      return;
+    }
   }
 
   void _updateCountdown() {
@@ -147,41 +188,327 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
     final titleController = TextEditingController();
     final heirEmailController = TextEditingController();
     final contentController = TextEditingController();
+    final mediaService = MediaService();
+    
+    List<Map<String, dynamic>> uploadedMedia = [];
+    bool isUploading = false;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF121212),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.cyanAccent, width: 0.2)),
-        title: const Text("NEW INSTRUCTION", style: TextStyle(color: Colors.cyanAccent, fontSize: 16, letterSpacing: 2)),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildTextField(titleController, "TITLE"),
-              _buildTextField(heirEmailController, "HEIR EMAIL"),
-              _buildTextField(contentController, "CONTENT", maxLines: 3),
-            ],
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: const Color(0xFF121212),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: Colors.cyanAccent, width: 0.2),
           ),
+          title: const Text("NEW INSTRUCTION", style: TextStyle(color: Colors.cyanAccent, fontSize: 16, letterSpacing: 2)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTextField(titleController, "TITLE"),
+                _buildTextField(heirEmailController, "HEIR EMAIL"),
+                _buildTextField(contentController, "CONTENT", maxLines: 3),
+                
+                const SizedBox(height: 20),
+                const Divider(color: Colors.white12),
+                const SizedBox(height: 15),
+                
+                // 媒体上传按钮
+                const Text(
+                  "ATTACH MEDIA",
+                  style: TextStyle(color: Colors.cyanAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
+                ),
+                const SizedBox(height: 12),
+                
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    _buildMediaButton(
+                      context: context,
+                      setState: setState,
+                      mediaService: mediaService,
+                      uploadedMedia: uploadedMedia,
+                      isUploading: isUploading,
+                      fileType: 'image',
+                      label: '📷 IMAGE',
+                    ),
+                    _buildMediaButton(
+                      context: context,
+                      setState: setState,
+                      mediaService: mediaService,
+                      uploadedMedia: uploadedMedia,
+                      isUploading: isUploading,
+                      fileType: 'video',
+                      label: '🎥 VIDEO',
+                    ),
+                    _buildMediaButton(
+                      context: context,
+                      setState: setState,
+                      mediaService: mediaService,
+                      uploadedMedia: uploadedMedia,
+                      isUploading: isUploading,
+                      fileType: 'audio',
+                      label: '🎵 AUDIO',
+                    ),
+                  ],
+                ),
+                
+                // 显示已上传的媒体
+                if (uploadedMedia.isNotEmpty) ...[
+                  const SizedBox(height: 15),
+                  const Divider(color: Colors.white12),
+                  const SizedBox(height: 10),
+                  const Text(
+                    "ATTACHED MEDIA",
+                    style: TextStyle(color: Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1),
+                  ),
+                  const SizedBox(height: 10),
+                  Column(
+                    children: uploadedMedia.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      var media = entry.value;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white10,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.greenAccent.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              MediaService.getMediaIcon(media['type'] as String),
+                              color: Colors.greenAccent,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    media['name'] as String,
+                                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    MediaService.formatFileSize(media['size'] as int),
+                                    style: const TextStyle(color: Colors.white54, fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close, color: Colors.redAccent, size: 18),
+                              onPressed: () {
+                                setState(() => uploadedMedia.removeAt(index));
+                              },
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("CANCEL", style: TextStyle(color: Colors.white24)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.cyanAccent,
+                foregroundColor: Colors.black,
+              ),
+              onPressed: isUploading
+                  ? null
+                  : () async {
+                      // 验证所有必填字段
+                      final title = titleController.text.trim();
+                      final heirEmail = heirEmailController.text.trim();
+                      final content = contentController.text.trim();
+                      
+                      if (title.isEmpty) {
+                        _showSnackBar("✗ TITLE is required");
+                        return;
+                      }
+                      
+                      if (heirEmail.isEmpty) {
+                        _showSnackBar("✗ HEIR EMAIL is required");
+                        return;
+                      }
+                      
+                      if (content.isEmpty) {
+                        _showSnackBar("✗ CONTENT is required");
+                        return;
+                      }
+                      
+                      // 验证邮箱格式
+                      final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                      if (!emailRegex.hasMatch(heirEmail)) {
+                        _showSnackBar("✗ Invalid EMAIL format");
+                        return;
+                      }
+                      
+                      try {
+                        // 创建记录
+                        await _firestore
+                            .collection('users')
+                            .doc(_uid)
+                            .collection('records')
+                            .add({
+                          'title': title,
+                          'heirEmail': heirEmail,
+                          'content': content,
+                          'media': uploadedMedia,
+                          'createdAt': FieldValue.serverTimestamp(),
+                          'status': 'draft',
+                        });
+                        
+                        if (mounted) {
+                          Navigator.pop(context);
+                          final message = uploadedMedia.isEmpty
+                              ? "✓ INSTRUCTION SAVED"
+                              : "✓ SAVED WITH ${uploadedMedia.length} FILE(S)";
+                          _showSnackBar(message);
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          _showSnackBar("✗ SAVE FAILED: $e");
+                        }
+                      }
+                    },
+              child: isUploading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                      ),
+                    )
+                  : const Text("SAVE"),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("CANCEL", style: TextStyle(color: Colors.white24))),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.cyanAccent, foregroundColor: Colors.black),
-            onPressed: () async {
-              if (titleController.text.isNotEmpty) {
-                await _firestore.collection('users').doc(_uid).collection('records').add({
-                  'title': titleController.text,
-                  'heirEmail': heirEmailController.text,
-                  'content': contentController.text,
-                  'createdAt': FieldValue.serverTimestamp(),
+      ),
+    );
+  }
+
+  Widget _buildMediaButton({
+    required BuildContext context,
+    required StateSetter setState,
+    required MediaService mediaService,
+    required List<Map<String, dynamic>> uploadedMedia,
+    required bool isUploading,
+    required String fileType,
+    required String label,
+  }) {
+    return ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.white10,
+        foregroundColor: Colors.cyanAccent,
+        side: const BorderSide(color: Colors.cyanAccent, width: 0.5),
+      ),
+      onPressed: isUploading
+          ? null
+          : () async {
+              try {
+                // 先创建临时记录ID用于上传
+                final tempRecordId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+                
+                // 立即显示上传中的 overlay
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (dialogContext) => MediaUploadOverlay(
+                    fileName: 'Uploading file...',
+                    uploadedBytes: 0,
+                    totalBytes: 1,
+                    isCompleted: false,
+                  ),
+                );
+
+                setState(() {
+                  isUploading = true;
                 });
-                Navigator.pop(context);
+                
+                final mediaInfo = await mediaService.uploadMedia(
+                  uid: _uid,
+                  recordId: tempRecordId,
+                  fileType: fileType,
+                  onProgress: (uploaded, total) {
+                    // 上传进度回调
+                  },
+                );
+
+                if (mounted) {
+                  // 关闭上传中的 dialog
+                  Navigator.pop(context);
+
+                  if (mediaInfo != null && !mediaInfo.containsKey('error')) {
+                    // 上传成功
+                    // 显示上传完成的 overlay
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (dialogContext) => MediaUploadOverlay(
+                        fileName: mediaInfo['name'] ?? 'Unknown File',
+                        uploadedBytes: mediaInfo['size'] ?? 0,
+                        totalBytes: mediaInfo['size'] ?? 1,
+                        isCompleted: true,
+                      ),
+                    );
+
+                    // 延迟后关闭 dialog 并更新列表
+                    await Future.delayed(const Duration(milliseconds: 1500));
+                    if (mounted) {
+                      Navigator.pop(context);
+                      setState(() {
+                        uploadedMedia.add(mediaInfo);
+                        isUploading = false;
+                      });
+                      if (mounted) {
+                        _showSnackBar("✓ ATTACHED: ${mediaInfo['name']}");
+                      }
+                    }
+                  } else if (mediaInfo != null && mediaInfo.containsKey('error')) {
+                    // 上传失败，显示特定的错误信息
+                    setState(() {
+                      isUploading = false;
+                    });
+                    final errorMsg = mediaInfo['error'] as String;
+                    _showSnackBar("✗ UPLOAD ERROR: $errorMsg");
+                  } else {
+                    // 用户取消上传
+                    setState(() {
+                      isUploading = false;
+                    });
+                  }
+                }
+              } catch (e) {
+                if (mounted) {
+                  Navigator.pop(context);
+                  setState(() {
+                    isUploading = false;
+                  });
+                  _showSnackBar("✗ UPLOAD FAILED: $e");
+                }
               }
             },
-            child: const Text("SAVE"),
-          ),
-        ],
+      icon: const Icon(Icons.add),
+      label: Text(
+        label,
+        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
       ),
     );
   }
