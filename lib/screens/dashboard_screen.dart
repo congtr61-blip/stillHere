@@ -3,11 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 import 'detail_screen.dart';
+import 'contact_binding_page.dart';
 import '../widgets/archive_card.dart';
 import '../widgets/media_upload_overlay.dart';
 import '../widgets/daily_verification_dialog.dart';
 import '../services/media_service.dart';
 import '../services/record_verification_service.dart';
+import '../services/auth_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   final String uid;
@@ -534,6 +536,42 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: const Color(0xFF1C1C1C), content: Text(msg, style: const TextStyle(color: Colors.white70, fontSize: 12))));
   }
 
+  void _showUserMenu() {
+    final authService = AuthService();
+    showMenu(
+      context: context,
+      position: const RelativeRect.fromLTRB(100, 60, 0, 0),
+      items: [
+        PopupMenuItem(
+          child: const Row(
+            children: [
+              Icon(Icons.manage_accounts, size: 18),
+              SizedBox(width: 12),
+              Text("联系方式管理"),
+            ],
+          ),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ContactBindingPage()),
+            );
+          },
+        ),
+        PopupMenuItem(
+          child: const Row(
+            children: [
+              Icon(Icons.logout, size: 18),
+              SizedBox(width: 12),
+              Text("退出登录"),
+            ],
+          ),
+          onTap: () async {
+            await authService.signOut();
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double progress = _remainingTime.inSeconds / _totalCycle.inSeconds;
@@ -556,7 +594,10 @@ class _DashboardScreenState extends State<DashboardScreen> with TickerProviderSt
               children: [
                 const Icon(Icons.radar, color: Colors.cyanAccent, size: 18),
                 const Text("STILL HERE", style: TextStyle(color: Colors.white, letterSpacing: 8, fontWeight: FontWeight.w100, fontSize: 18)),
-                const SizedBox(width: 18),
+                IconButton(
+                  icon: const Icon(Icons.more_vert, color: Colors.cyanAccent, size: 20),
+                  onPressed: _showUserMenu,
+                ),
               ],
             ),
           ),

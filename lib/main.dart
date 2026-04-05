@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'firebase_options.dart';
 
 import 'package:stillhere/screens/login_page.dart';
@@ -11,6 +12,26 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // 配置 reCAPTCHA（Web 平台）
+  if (kIsWeb) {
+    debugPrint("🌐 Web 平台检测到，配置 reCAPTCHA...");
+    
+    if (kDebugMode) {
+      // 开发环境：禁用 reCAPTCHA 检查，方便测试
+      FirebaseAuth.instance.setSettings(
+        appVerificationDisabledForTesting: true,
+      );
+      debugPrint("🔓 开发模式：已禁用 reCAPTCHA 检查");
+      debugPrint("💡 可以使用虚拟号码进行测试");
+    } else {
+      // 生产环境：启用 reCAPTCHA
+      FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+      debugPrint("🔐 生产模式：已启用 reCAPTCHA");
+      debugPrint("⚠️ 确保已在 Firebase Console 配置 reCAPTCHA");
+    }
+  }
+  
   runApp(const StillHereApp());
 }
 
