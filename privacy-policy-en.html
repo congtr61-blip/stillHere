@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - StillHere</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #1976D2;
+        }
+        
+        h1 {
+            color: #1976D2;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .meta {
+            color: #666;
+            font-size: 0.95em;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .meta span {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .meta strong {
+            color: #333;
+        }
+        
+        /* 目录 */
+        .toc {
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            padding: 20px;
+            margin: 30px 0;
+            border-radius: 4px;
+        }
+        
+        .toc h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .toc ol {
+            margin-left: 20px;
+        }
+        
+        .toc li {
+            margin: 8px 0;
+        }
+        
+        .toc a {
+            color: #1976D2;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .toc a:hover {
+            color: #4CAF50;
+            text-decoration: underline;
+        }
+        
+        /* 主要内容 */
+        h2 {
+            color: #1976D2;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            font-size: 1.6em;
+        }
+        
+        h3 {
+            color: #333;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        h4 {
+            color: #555;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.05em;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        /* 列表 */
+        ul, ol {
+            margin: 15px 0 15px 30px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        /* 强调 */
+        strong {
+            color: #333;
+            font-weight: 600;
+        }
+        
+        em {
+            color: #555;
+            font-style: italic;
+        }
+        
+        /* 表格 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+        }
+        
+        table th {
+            background: #1976D2;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+        
+        table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        /* 代码块 */
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #d63384;
+        }
+        
+        pre {
+            background: #f5f5f5;
+            border-left: 4px solid #1976D2;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+            border-radius: 4px;
+        }
+        
+        pre code {
+            color: #333;
+            padding: 0;
+            background: none;
+        }
+        
+        /* 提示框 */
+        .alert {
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        
+        .alert-info {
+            background: #e3f2fd;
+            border-color: #1976D2;
+            color: #1565c0;
+        }
+        
+        .alert-success {
+            background: #e8f5e9;
+            border-color: #4CAF50;
+            color: #2e7d32;
+        }
+        
+        .alert-warning {
+            background: #fff3e0;
+            border-color: #ff9800;
+            color: #e65100;
+        }
+        
+        .alert-danger {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #c62828;
+        }
+        
+        /* 相关信息框 */
+        .info-box {
+            background: #f0f7ff;
+            border: 1px solid #1976D2;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        /* 返回顶部 */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1976D2;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+        
+        .back-to-top.show {
+            opacity: 0.8;
+        }
+        
+        .back-to-top:hover {
+            opacity: 1;
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            h2 {
+                font-size: 1.3em;
+            }
+            
+            table {
+                font-size: 0.9em;
+            }
+            
+            table th, table td {
+                padding: 8px;
+            }
+            
+            .meta {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+        
+        /* 语言切换 */
+        .language-switch {
+            text-align: right;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        
+        .language-switch a {
+            color: #1976D2;
+            text-decoration: none;
+            margin-left: 15px;
+        }
+        
+        .language-switch a:hover {
+            text-decoration: underline;
+        }
+        
+        .language-switch a.active {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="language-switch">
+            <span>Language/语言：</span>
+            <a href="privacy-policy.html">中文</a>
+            <a href="#" class="active">English</a>
+        </div>
+        
+        <header>
+            <h1>Privacy Policy</h1>
+            <div class="meta">
+                <span><strong>Effective Date:</strong> April 5, 2026</span>
+                <span><strong>Application:</strong> StillHere</span>
+            </div>
+        </header>
+        
+        <div class="alert alert-info">
+            <strong>📋 Quick Summary:</strong> We only collect personal information needed to provide our services. We do not sell your data to third parties. You can request access, modification, or deletion of your data at any time. We use industry-standard encryption and security measures to protect your information.
+        </div>
+        
+        <!-- 快速导航 -->
+        <div class="toc">
+            <h2>📚 Quick Navigation</h2>
+            <ol>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#what-we-collect">What Data We Collect</a></li>
+                <li><a href="#how-we-use">How We Use Data</a></li>
+                <li><a href="#data-protection">Data Protection</a></li>
+                <li><a href="#your-rights">Your Rights</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+            </ol>
+        </div>
+        
+        <h2 id="overview">Overview</h2>
+        <p>Welcome to the StillHere application. We value your privacy and are committed to being transparent about how we collect, use, and protect your personal information.</p>
+        
+        <div class="alert alert-success">
+            <strong>✅ Our Commitments:</strong>
+            <ul style="margin: 10px 0 0 20px;">
+                <li>Collect only necessary personal information</li>
+                <li>Never sell your data to third parties</li>
+                <li>Always honor your data privacy rights</li>
+                <li>Use industry-standard encryption and security</li>
+            </ul>
+        </div>
+        
+        <h2 id="what-we-collect">What Data We Collect</h2>
+        
+        <h3>1. Authentication Information</h3>
+        <table>
+            <tr>
+                <th>Data Item</th>
+                <th>Why We Collect It</th>
+                <th>Where Stored</th>
+                <th>Encrypted</th>
+            </tr>
+            <tr>
+                <td>Phone Number</td>
+                <td>User authentication<br>SMS verification codes<br>Account recovery</td>
+                <td>Firestore</td>
+                <td>✅ Yes</td>
+            </tr>
+            <tr>
+                <td>Email Address</td>
+                <td>Account login<br>Email verification<br>Security notifications</td>
+                <td>Firestore &<br>Firebase Auth</td>
+                <td>✅ Yes</td>
+            </tr>
+            <tr>
+                <td>Google Account Info</td>
+                <td>User authentication<br>Account linking</td>
+                <td>Firebase Auth &<br>Firestore</td>
+                <td>✅ Yes</td>
+            </tr>
+        </table>
+        
+        <h3>2. Verification Data</h3>
+        <p>We collect verification codes and tokens only during the verification process and delete them immediately after. All verification data is encrypted in transit.</p>
+        
+        <h3>3. Technical Data</h3>
+        <p>To improve application performance and security, we collect:</p>
+        <ul>
+            <li>Device identifiers (for debugging only)</li>
+            <li>Usage logs (to improve features)</li>
+            <li>Error reports (to fix issues)</li>
+            <li>IP address (for security, not location tracking)</li>
+        </ul>
+        
+        <h2 id="how-we-use">How We Use Your Data</h2>
+        
+        <h3>✅ We Use Your Data For:</h3>
+        <ul>
+            <li><strong>Providing Services:</strong> Authentication, account management, contact method management</li>
+            <li><strong>Security:</strong> Detect suspicious activity, prevent fraud</li>
+            <li><strong>Customer Support:</strong> Account recovery, technical assistance</li>
+            <li><strong>Service Improvement:</strong> Optimize performance, fix bugs, develop new features</li>
+            <li><strong>Legal Compliance:</strong> Meet legal requirements</li>
+        </ul>
+        
+        <h3>❌ We Never:</h3>
+        <ul>
+            <li>Sell your data to third parties</li>
+            <li>Use data for purposes outside core application services (without consent)</li>
+            <li>Track your physical location</li>
+            <li>Share data with other platforms for marketing</li>
+        </ul>
+        
+        <h2 id="data-protection">Data Protection</h2>
+        
+        <h3>🔐 Encryption Standards</h3>
+        <table>
+            <tr>
+                <th>Type</th>
+                <th>Standard</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>In Transit</td>
+                <td>TLS/SSL (HTTPS)</td>
+                <td>All network communications encrypted</td>
+            </tr>
+            <tr>
+                <td>At Rest</td>
+                <td>AES-256</td>
+                <td>Firebase automatic encryption</td>
+            </tr>
+            <tr>
+                <td>Key Management</td>
+                <td>Google KMS</td>
+                <td>Google Cloud Key Management Service</td>
+            </tr>
+            <tr>
+                <td>Backups</td>
+                <td>AES-256</td>
+                <td>Backup data also encrypted</td>
+            </tr>
+        </table>
+        
+        <h3>🔑 Access Control</h3>
+        <div class="info-box">
+            <p><strong>Key Rules:</strong></p>
+            <ul>
+                <li>✅ Users can only access their own data</li>
+                <li>✅ Other users cannot see your information</li>
+                <li>✅ Administrators cannot read personal data</li>
+                <li>✅ All access is logged and audited</li>
+            </ul>
+        </div>
+        
+        <h3>✅ Implemented Security Measures</h3>
+        <ul>
+            <li>Regular security audits</li>
+            <li>Firewalls and DDoS protection (Google Cloud)</li>
+            <li>Real-time logging and monitoring</li>
+            <li>Secure password handling</li>
+            <li>Automatic backup and recovery</li>
+        </ul>
+        
+        <h2 id="your-rights">Your Rights</h2>
+        
+        <h3>Under privacy laws (GDPR, etc.), you have these rights:</h3>
+        
+        <table>
+            <tr>
+                <th>Right</th>
+                <th>Description</th>
+                <th>How to Exercise</th>
+                <th>Timeframe</th>
+            </tr>
+            <tr>
+                <td>Access</td>
+                <td>Get all data we hold about you</td>
+                <td>Email: privacy@stillhere.app</td>
+                <td>30 days</td>
+            </tr>
+            <tr>
+                <td>Correction</td>
+                <td>Correct inaccurate data</td>
+                <td>Modify directly in app</td>
+                <td>Immediate</td>
+            </tr>
+            <tr>
+                <td>Deletion</td>
+                <td>Request data deletion</td>
+                <td>App "Delete Account"</td>
+                <td>30 days</td>
+            </tr>
+            <tr>
+                <td>Portability</td>
+                <td>Get data in standard format</td>
+                <td>Email: privacy@stillhere.app</td>
+                <td>30 days</td>
+            </tr>
+            <tr>
+                <td>Object</td>
+                <td>Refuse certain data use</td>
+                <td>App settings</td>
+                <td>Immediate</td>
+            </tr>
+        </table>
+        
+        <div class="alert alert-info">
+            <strong>💡 Tip:</strong> To exercise any right, email <code>privacy@stillhere.app</code> describing your request. We confirm receipt within 24 hours and complete within 30 days.
+        </div>
+        
+        <h2 id="contact">Contact Us</h2>
+        
+        <div class="info-box">
+            <h3>Privacy Questions</h3>
+            <p><strong>Email:</strong></p>
+            <pre>privacy@stillhere.app</pre>
+            <p><strong>In-App:</strong></p>
+            <ul>
+                <li>Open menu → Help and Support → Privacy Issues</li>
+            </ul>
+        </div>
+        
+        <h3>Data Protection Officer</h3>
+        <p>For GDPR-related issues: <code>dpo@stillhere.app</code></p>
+        
+        <h3>Regulatory Authorities</h3>
+        <p>If unsatisfied with our response, you can lodge a complaint with your regional authority:</p>
+        <ul>
+            <li><strong>EU:</strong> Your country's data protection authority</li>
+            <li><strong>USA:</strong> FTC - https://reportfraud.ftc.gov/</li>
+            <li><strong>Other:</strong> Consult your local privacy authority</li>
+        </ul>
+        
+        <h2>FAQ</h2>
+        
+        <h3>Q: Will you sell my data?</h3>
+        <p><strong>A:</strong> No. We never sell any personal data to anyone.</p>
+        
+        <h3>Q: Do you track my location?</h3>
+        <p><strong>A:</strong> No. We collect IP addresses for security but never track physical location.</p>
+        
+        <h3>Q: What happens when I delete my account?</h3>
+        <p><strong>A:</strong> All personal data is deleted immediately. Only legally required data is retained per applicable laws.</p>
+        
+        <h3>Q: What encryption do you use?</h3>
+        <p><strong>A:</strong> Transit uses TLS/SSL (HTTPS), storage uses AES-256 encryption. This is the highest industry standard.</p>
+        
+        <h3>Q: How do I update my information?</h3>
+        <p><strong>A:</strong> Select "Account Settings" in the app and modify your information.</p>
+        
+        <div class="alert alert-success" style="margin-top: 30px;">
+            <strong>✅ Summary</strong>
+            <p>Your privacy and data security are paramount to us. We employ industry best practices to protect your information and are committed to transparent communication about how we process your data.</p>
+        </div>
+        
+        <footer>
+            <p><strong>StillHere Privacy Policy v1.0</strong></p>
+            <p>Effective Date: April 5, 2026 | Last Updated: April 5, 2026</p>
+            <p>© 2026 StillHere. All rights reserved.</p>
+        </footer>
+    </div>
+    
+    <a href="#" class="back-to-top" id="backToTop">↑</a>
+    
+    <script>
+        // Back to top button
+        const backToTop = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTop.classList.add('show');
+            } else {
+                backToTop.classList.remove('show');
+            }
+        });
+        
+        backToTop.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>

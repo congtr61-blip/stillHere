@@ -1,0 +1,37 @@
+<svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#ffffff"/>
+  
+  <!-- Main head circle -->
+  <circle cx="256" cy="280" r="180" fill="#1a1a1a" stroke="#000000" stroke-width="4"/>
+  
+  <!-- Top tuft/hair accent -->
+  <path d="M 160 200 Q 160 120 256 100 Q 352 120 352 200" fill="#0d0d0d" stroke="#000000" stroke-width="3"/>
+  
+  <!-- Left eye white -->
+  <circle cx="210" cy="260" r="35" fill="#ffffff"/>
+  <!-- Left eye pupil -->
+  <circle cx="215" cy="260" r="20" fill="#000000"/>
+  <!-- Left eye shine -->
+  <circle cx="219" cy="253" r="8" fill="#ffffff"/>
+  
+  <!-- Right eye white -->
+  <circle cx="302" cy="260" r="35" fill="#ffffff"/>
+  <!-- Right eye pupil -->
+  <circle cx="297" cy="260" r="20" fill="#000000"/>
+  <!-- Right eye shine -->
+  <circle cx="293" cy="253" r="8" fill="#ffffff"/>
+  
+  <!-- Smile/mouth -->
+  <path d="M 230 320 Q 256 340 282 320" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- Tech accent lines on sides -->
+  <line x1="80" y1="260" x2="130" y2="260" stroke="#000000" stroke-width="5" stroke-linecap="round"/>
+  <line x1="382" y1="260" x2="432" y2="260" stroke="#000000" stroke-width="5" stroke-linecap="round"/>
+  
+  <!-- Bottom accent arc -->
+  <path d="M 200 420 Q 256 450 312 420" fill="none" stroke="#000000" stroke-width="5" stroke-linecap="round"/>
+  
+  <!-- Security/shield subtle element -->
+  <path d="M 256 140 L 280 160 L 280 200 Q 256 215 232 200 L 232 160 Z" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+</svg>
